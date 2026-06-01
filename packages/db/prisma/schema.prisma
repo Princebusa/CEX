@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String          @id @default(uuid())
+  name      String
+  email     String          @unique
+  position  Position[]
+  history   history[]
+  wallet    wallet[]
+
+}
+
+model Market {
+  id        String          @id @default(uuid())
+  symbol    String
+  position  Position[]
+}
+model Position{
+  id        String          @id @default(uuid())
+  side      PositionSide
+  qty       Float
+  price     Float
+  userId    String
+  marketId  String
+  user      User            @relation(fields: [userId], references: [id])
+  market    Market          @relation(fields: [marketId], references: [id])
+}
+
+enum PositionSide {
+  buy
+  sell
+}
+
+model history {
+  id        String          @id @default(uuid())
+  side      PositionSide
+  qty       Float
+  price     Float
+  exitPrice Float
+  userId    String
+  user      User            @relation(fields: [userId], references: [id])
+}
+
+model wallet {
+  id        String          @id @default(uuid())
+  balance   Float           @default(0)
+  userId    String 
+  user      User            @relation(fields: [userId], references: [id])
+}
