@@ -14,7 +14,7 @@ model User {
   password  String
   position  Position[]
   history   history[]
-  wallet    wallet[]
+  wallet    wallet?
 }
 
 model Market {
@@ -51,6 +51,6 @@ model history {
 model wallet {
   id        String          @id @default(uuid())
   balance   Float           @default(0)
-  userId    String 
+  userId    String          @unique
   user      User            @relation(fields: [userId], references: [id])
 }
