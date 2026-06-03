@@ -42,7 +42,7 @@ export default async function orderController(req: Request, res: Response) {
       timestamp: Date.now()
     };
 
-    await redis.xadd("orders_stream", "*", "data", JSON.stringify(order));
+    await redis.xadd(`orders_stream:${symbol}`, "*", "data", JSON.stringify(order));
 
     return res.json({
       message: "Order placed",
