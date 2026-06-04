@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import dotenv from "dotenv";
 import auth  from "./Routes/auth.route";
+import { initwebsocket } from "./ws";
 dotenv.config();
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use('/', auth)
 
 
-app.listen(PORT, () => {
+export const httpserver = app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+initwebsocket(httpserver);  

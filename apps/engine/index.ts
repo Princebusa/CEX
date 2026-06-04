@@ -1,6 +1,10 @@
 import { OrderBook } from "./orderBook";
+import  redis  from "redis";
 
-const engines: { key: string } = {};
+type engines = {
+  symbol: String
+}
+const engines: { [key: string]: OrderBook } = {};
 
 export function getEngine(symbol: string) {
   if (!engines[symbol]) {
@@ -10,7 +14,7 @@ export function getEngine(symbol: string) {
   return engines[symbol];
 }
 
-export async function startEngine(symbol: string) {
+async function startEngine(symbol: string) {
   let lastId = "0";
 
   while (true) {
@@ -30,7 +34,10 @@ export async function startEngine(symbol: string) {
       lastId = id;
 
       const order = JSON.parse(fields[1]);
-      await engines[symbol].process(order);
+
+      const engine = getEngine(order.symbol);
+
+      await engine.process(order);
     }
   }
 }
