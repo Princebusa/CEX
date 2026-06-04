@@ -14,14 +14,12 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/uuid": "^11.0.0",
     "bcrypt": "^6.0.0",
     "comman": "*",
     "cors": "^2.8.6",
     "db": "*",
     "dotenv": "^17.4.2",
-    "ioredis": "^5.11.0",
     "jsonwebtoken": "^9.0.3",
-    "uuid": "^14.0.0"
+    "redis": "*"
   }
 }

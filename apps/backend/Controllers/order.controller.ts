@@ -1,10 +1,8 @@
 import type { Request, Response } from "express";
 import { orderSchema } from "comman";
-import { v4 as uuidv4 } from "uuid";
-import Redis from "ioredis";
+import redis from "redis";
 import { prisma } from "db";
 
-const redis = new Redis();
 
 export default async function orderController(req: Request, res: Response) {
   try {
@@ -32,7 +30,7 @@ export default async function orderController(req: Request, res: Response) {
 
     }
     const order = {
-      orderId: uuidv4(),
+      orderId: crypto.randomUUID(),
       userId: String(req.userId),
       symbol,
       side,

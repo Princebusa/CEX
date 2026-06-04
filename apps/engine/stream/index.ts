@@ -1,4 +1,4 @@
-
+import redis from 'redis';
 
 export async function emitOrderbook(symbol: string, bids: any[], asks: any[]): Promise<any> {
   const snapshot = {

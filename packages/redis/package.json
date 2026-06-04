@@ -1,8 +1,11 @@
 {
-  "name": "engine",
+  "name": "redis",
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "exports": {
+    ".": "./index.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
@@ -10,7 +13,7 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "comman": "*",
-    "redis": "*"
+    "dotenv": "^17.4.2",
+    "ioredis": "^5.11.0"
   }
 }

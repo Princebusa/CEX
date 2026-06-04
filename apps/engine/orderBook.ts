@@ -1,7 +1,7 @@
 import type{ order} from "comman";
 import { emitOrderbook, emitTrade } from "./stream";
 
-class OrderBook {
+export class OrderBook {
 
   symbol: string;
   buyOrders: order[];
