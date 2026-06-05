@@ -41,6 +41,7 @@
       "name": "engine",
       "dependencies": {
         "comman": "*",
+        "dotenv": "^17.4.2",
         "redis": "*",
       },
       "devDependencies": {

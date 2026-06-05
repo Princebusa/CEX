@@ -1,4 +1,4 @@
-import redis from 'redis';
+import redis from "redis";
 
 export async function emitOrderbook(symbol: string, bids: any[], asks: any[]): Promise<any> {
   const snapshot = {
@@ -15,13 +15,23 @@ export async function emitOrderbook(symbol: string, bids: any[], asks: any[]): P
   );
 }
 
-export async function emitTrade(buy: any, sell: any, qty: number, price: number, symbol: string): Promise<any> {
+export async function emitTrade(
+  buy: { orderId: string; userId: string },
+  sell: { orderId: string; userId: string },
+  qty: number,
+  price: number,
+  symbol: string
+): Promise<void> {
   const trade = {
     symbol,
-    tradeId: Date.now(),
+    tradeId: crypto.randomUUID(),
+    buyOrderId: buy.orderId,
+    sellOrderId: sell.orderId,
+    buyerId: buy.userId,
+    sellerId: sell.userId,
     price,
     quantity: qty,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 
   await redis.xadd(`trades_stream:${symbol}`, "*", "data", JSON.stringify(trade));

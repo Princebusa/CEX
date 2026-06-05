@@ -1,15 +1,21 @@
-import type{ order} from "comman";
+import type { order } from "comman";
 import { emitOrderbook, emitTrade } from "./stream";
 
-export class OrderBook {
+function matchPrice(order: order): number {
+  if (order.type === "market") {
+    return order.side === "buy" ? Infinity : 0;
+  }
+  return order.price;
+}
 
+export class OrderBook {
   symbol: string;
   buyOrders: order[];
   sellOrders: order[];
 
   constructor(symbol: string) {
     this.symbol = symbol;
-    this.buyOrders  = [];
+    this.buyOrders = [];
     this.sellOrders = [];
   }
 
@@ -18,26 +24,29 @@ export class OrderBook {
     this.sellOrders.sort((a, b) => a.price - b.price);
   }
 
-  async process(order: order) {
-    if (order.side === "BUY") {
-      await this.matchBuy(order);
+  async process(incoming: order) {
+    const order: order = { ...incoming, price: matchPrice(incoming) };
+
+    if (order.side === "buy") {
+      await this.matchBuy(order, incoming);
     } else {
-      await this.matchSell(order);
+      await this.matchSell(order, incoming);
     }
   }
 
-  async matchBuy(order: order) {
-    while (order.qty > 0) {
-      if (this.sellOrders.length === 0) break;
+  async matchBuy(order: order, resting: order) {
+    let bookChanged = false;
 
-      let bestSell = this.sellOrders[0];
-      if (!bestSell || order.price < bestSell.price) break;
+    while (order.qty > 0 && this.sellOrders.length > 0) {
+      const bestSell = this.sellOrders[0]!;
+      if (order.price < bestSell.price) break;
 
-      let tradedQty = Math.min(order.qty, bestSell.qty);
-      let tradePrice = bestSell.price;
+      const tradedQty = Math.min(order.qty, bestSell.qty);
+      const tradePrice = bestSell.price;
 
       order.qty -= tradedQty;
       bestSell.qty -= tradedQty;
+      bookChanged = true;
 
       await emitTrade(order, bestSell, tradedQty, tradePrice, this.symbol);
 
@@ -46,25 +55,30 @@ export class OrderBook {
       }
     }
 
-    if (order.qty > 0) {
-      this.buyOrders.push(order);
+    if (order.qty > 0 && resting.type === "limit") {
+      this.buyOrders.push({ ...resting, qty: order.qty });
       this.sortBooks();
+      bookChanged = true;
+    }
+
+    if (bookChanged) {
       await emitOrderbook(this.symbol, this.buyOrders, this.sellOrders);
     }
   }
 
-  async matchSell(order: order) {
-    while (order.qty > 0) {
-      if (this.buyOrders.length === 0) break;
+  async matchSell(order: order, resting: order) {
+    let bookChanged = false;
 
-      let bestBuy = this.buyOrders[0];
-      if (!bestBuy || order.price > bestBuy.price) break;
+    while (order.qty > 0 && this.buyOrders.length > 0) {
+      const bestBuy = this.buyOrders[0]!;
+      if (order.price > bestBuy.price) break;
 
-      let tradedQty = Math.min(order.qty, bestBuy.qty);
-      let tradePrice = bestBuy.price;
+      const tradedQty = Math.min(order.qty, bestBuy.qty);
+      const tradePrice = bestBuy.price;
 
       order.qty -= tradedQty;
       bestBuy.qty -= tradedQty;
+      bookChanged = true;
 
       await emitTrade(bestBuy, order, tradedQty, tradePrice, this.symbol);
 
@@ -73,9 +87,13 @@ export class OrderBook {
       }
     }
 
-    if (order.qty > 0) {
-      this.sellOrders.push(order);
+    if (order.qty > 0 && resting.type === "limit") {
+      this.sellOrders.push({ ...resting, qty: order.qty });
       this.sortBooks();
+      bookChanged = true;
+    }
+
+    if (bookChanged) {
       await emitOrderbook(this.symbol, this.buyOrders, this.sellOrders);
     }
   }

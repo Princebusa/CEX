@@ -1,43 +1,82 @@
+import dotenv from "dotenv";
+import redis from "redis";
+import type { order } from "comman";
 import { OrderBook } from "./orderBook";
-import  redis  from "redis";
 
-type engines = {
-  symbol: String
-}
-const engines: { [key: string]: OrderBook } = {};
+dotenv.config();
 
-export function getEngine(symbol: string) {
-  if (!engines[symbol]) {
-    console.log("Creating engine for:", symbol);
-    engines[symbol] = new OrderBook(symbol);
+const STREAM = "orders_stream";
+const GROUP = "engine_group";
+const CONSUMER = `consumer-${process.pid}`;
+
+const orderbooks: Record<string, OrderBook> = {};
+
+async function init() {
+  try {
+    await redis.xgroup("CREATE", STREAM, GROUP, "0", "MKSTREAM");
+  } catch (err: unknown) {
+      throw err;
   }
-  return engines[symbol];
 }
 
-async function startEngine(symbol: string) {
-  let lastId = "0";
+function getOrderBook(symbol: string): OrderBook {
+  if (!orderbooks[symbol]) {
+    orderbooks[symbol] = new OrderBook(symbol);
+    console.log(`Order book created for ${symbol}`);
+  }
+  return orderbooks[symbol];
+}
+
+function parseOrder(fields: string[]): order {
+  const raw = JSON.parse(fields[1]!);
+  const order = raw.order ?? raw;
+
+  if (!order.symbol) {
+    throw new Error("Order missing symbol");
+  }
+
+  return order as order;
+}
+
+async function start() {
+  await init();
+
 
   while (true) {
-    const response = await redis.xread(
-      "BLOCK",
-      0,
-      "STREAMS",
-      `orders_stream:${symbol}`,
-      lastId
-    );
+    try {
+      const res = (await redis.xreadgroup(
+        "GROUP",
+        GROUP,
+        CONSUMER,
+        "COUNT",
+        10,
+        "BLOCK",
+        5000,
+        "STREAMS",
+        STREAM,
+        ">"
+      )) 
 
-    if (!response) continue;
+      if (!res) continue;
+  // @ts-ignore
+      for (const [, messages] of res) {
+      
+        for (const [id, fields] of messages) {
+          try {
+            const order = parseOrder(fields);
+            const orderbook = getOrderBook(order.symbol);
 
-    const [_, messages] = response[0];
-
-    for (const [id, fields] of messages) {
-      lastId = id;
-
-      const order = JSON.parse(fields[1]);
-
-      const engine = getEngine(order.symbol);
-
-      await engine.process(order);
+            await orderbook.process(order);
+            await redis.xack(STREAM, GROUP, id);
+          } catch (err) {
+            console.error("Processing error:", err);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Worker loop error:", err);
     }
   }
 }
+
+start();

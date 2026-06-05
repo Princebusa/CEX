@@ -4,30 +4,32 @@ import type { Request, Response, NextFunction } from "express";
 declare global {
   namespace Express {
     interface Request {
-      userId: String;
+      userId: string;
     }
   }
 }
 
-export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-
+export const authMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const authHeader = req.headers.authorization;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!authHeader?.startsWith("Bearer ")) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
   const token = authHeader.split(" ")[1];
 
-  jwt.verify(token as string, process.env.JWT_SECRET as string, function(err, decoded) {
-    if (err) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }else{
-
-      req.userId = (decoded as any).userId;
-    }
-  });
-
-  next();
-
-}
+  try {
+    const decoded = jwt.verify(
+      token as string,
+      process.env.JWT_SECRET as string
+    ) as { userId: string };
+    req.userId = decoded.userId;
+    next();
+  } catch {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+};
