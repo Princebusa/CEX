@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { orderSchema } from "comman";
-import redis from "redis";
+import { redisStream } from "redis";
 import { prisma } from "db";
 
 export default async function orderController(req: Request, res: Response) {
@@ -29,27 +29,27 @@ export default async function orderController(req: Request, res: Response) {
       }
     }
 
-    if (side === "sell") {
-      const market = await prisma.market.findFirst({
-        where: { symbol },
-      });
+    // if (side === "sell") {
+    //   const market = await prisma.market.findFirst({
+    //     where: { symbol },
+    //   });
 
-      if (!market) {
-        return res.status(400).json({ error: `Unknown symbol: ${symbol}` });
-      }
+    //   if (!market) {
+    //     return res.status(400).json({ error: `Unknown symbol: ${symbol}` });
+    //   }
 
-      const position = await prisma.position.findFirst({
-        where: {
-          userId,
-          marketId: market.id,
-          side: "buy",
-        },
-      });
+    //   const position = await prisma.position.findFirst({
+    //     where: {
+    //       userId,
+    //       marketId: market.id,
+    //       side: "buy",
+    //     },
+    //   });
 
-      if (!position || position.qty < qty) {
-        return res.status(400).json({ error: "Insufficient position" });
-      }
-    }
+    //   if (!position || position.qty < qty) {
+    //     return res.status(400).json({ error: "Insufficient position" });
+    //   }
+    // }
 
     const order = {
       orderId: crypto.randomUUID(),
@@ -62,7 +62,7 @@ export default async function orderController(req: Request, res: Response) {
       timestamp: Date.now(),
     };
 
-    await redis.xadd("orders_stream", "*", "data", JSON.stringify({ order }));
+    await redisStream.xadd("orders_stream", "*", "data", JSON.stringify({ order }))
 
     return res.json({
       message: "Order placed",

@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import redis from "redis";
+import {redisStream} from "redis";
 import type { order } from "comman";
 import { OrderBook } from "./orderBook";
 
@@ -13,9 +13,11 @@ const orderbooks: Record<string, OrderBook> = {};
 
 async function init() {
   try {
-    await redis.xgroup("CREATE", STREAM, GROUP, "0", "MKSTREAM");
-  } catch (err: unknown) {
-      throw err;
+    await redisStream.xgroup("CREATE", STREAM, GROUP, "0", "MKSTREAM");
+  } catch (err: any) {
+       if (!err.message.includes("BUSYGROUP")) {
+    throw err; // real error
+  }
   }
 }
 
@@ -44,7 +46,7 @@ async function start() {
 
   while (true) {
     try {
-      const res = (await redis.xreadgroup(
+      const res = (await redisStream.xreadgroup(
         "GROUP",
         GROUP,
         CONSUMER,
@@ -67,7 +69,7 @@ async function start() {
             const orderbook = getOrderBook(order.symbol);
 
             await orderbook.process(order);
-            await redis.xack(STREAM, GROUP, id);
+            await redisStream.xack(STREAM, GROUP, id);
           } catch (err) {
             console.error("Processing error:", err);
           }

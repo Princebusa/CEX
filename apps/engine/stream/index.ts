@@ -1,16 +1,15 @@
-import redis from "redis";
+import {publisher} from "redis";
 
-export async function emitOrderbook(symbol: string, bids: any[], asks: any[]): Promise<any> {
+
+ export async function emitOrderbook(symbol: string, bids: any[], asks: any[]): Promise<any> {
   const snapshot = {
     symbol,
     bids: bids.slice(0, 10),
     asks: asks.slice(0, 10)
   };
 
-  await redis.xadd(
+  await publisher.publish(
     `orderbook_stream:${symbol}`,
-    "*",
-    "data",
     JSON.stringify(snapshot)
   );
 }
@@ -34,5 +33,8 @@ export async function emitTrade(
     timestamp: Date.now(),
   };
 
-  await redis.xadd(`trades_stream:${symbol}`, "*", "data", JSON.stringify(trade));
+  await publisher.publish(
+    `trades_stream:${symbol}`,
+    JSON.stringify(trade)
+  );
 }
