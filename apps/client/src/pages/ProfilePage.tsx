@@ -15,27 +15,36 @@ export function ProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="p-6">
-      <h1 className="mb-6 text-2xl font-bold">Profile</h1>
+    <div className="px-6 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Profile</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Account details and settings</p>
+      </div>
 
-      <Card className="max-w-md">
+      <Card className="max-w-md shadow-sm">
         <CardHeader>
           <CardTitle>Account</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Username</p>
-            <p className="font-medium">{user.username}</p>
+        <CardContent className="space-y-5">
+          <div className="rounded-lg bg-muted/50 px-4 py-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Username
+            </p>
+            <p className="mt-1 font-medium text-foreground">{user.username}</p>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Email</p>
-            <p className="font-medium">{user.email}</p>
+          <div className="rounded-lg bg-muted/50 px-4 py-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Email
+            </p>
+            <p className="mt-1 font-medium text-foreground">{user.email}</p>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">User ID</p>
-            <p className="font-mono text-sm">{user.id}</p>
+          <div className="rounded-lg bg-muted/50 px-4 py-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              User ID
+            </p>
+            <p className="mt-1 font-mono text-sm text-muted-foreground">{user.id}</p>
           </div>
-          <Button variant="destructive" onClick={handleLogout}>
+          <Button variant="outline" className="text-red-600 hover:text-red-700" onClick={handleLogout}>
             Logout
           </Button>
         </CardContent>

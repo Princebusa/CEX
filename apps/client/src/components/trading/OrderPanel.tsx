@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/api/client";
 import { cn } from "@/lib/utils";
+import { toastError, toastOrderPlaced } from "@/lib/toast";
 
 type Props = {
   symbol: string;
@@ -16,13 +17,9 @@ export function OrderPanel({ symbol, onOrderPlaced }: Props) {
   const [qty, setQty] = useState("1");
   const [price, setPrice] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
-    setSuccess("");
     setLoading(true);
 
     try {
@@ -44,10 +41,10 @@ export function OrderPanel({ symbol, onOrderPlaced }: Props) {
       }
 
       const res = await api.placeOrder(body);
-      setSuccess(`Order placed: ${res.orderId.slice(0, 8)}...`);
+      toastOrderPlaced(symbol, side, res.orderId);
       onOrderPlaced();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to place order");
+      toastError(err instanceof Error ? err.message : "Failed to place order");
     } finally {
       setLoading(false);
     }
@@ -55,36 +52,46 @@ export function OrderPanel({ symbol, onOrderPlaced }: Props) {
 
   return (
     <div className="flex h-full flex-col border-l border-border bg-card">
-      <div className="border-b border-border px-4 py-3">
-        <h3 className="font-semibold">Place Order</h3>
+      <div className="border-b border-border px-5 py-4">
+        <h3 className="font-semibold text-foreground">Place Order</h3>
         <p className="text-xs text-muted-foreground">{symbol}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-4 p-4">
-        <div className="grid grid-cols-2 gap-2">
+      <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-5 p-5">
+        <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/50 p-1">
           <Button
             type="button"
-            variant={side === "buy" ? "default" : "outline"}
-            className={cn(side === "buy" && "bg-emerald-600 hover:bg-emerald-600/90")}
+            variant="ghost"
+            className={cn(
+              "h-9 shadow-none",
+              side === "buy" && "bg-white text-emerald-700 shadow-sm ring-1 ring-emerald-200"
+            )}
             onClick={() => setSide("buy")}
           >
             Buy
           </Button>
           <Button
             type="button"
-            variant={side === "sell" ? "default" : "outline"}
-            className={cn(side === "sell" && "bg-red-600 hover:bg-red-600/90")}
+            variant="ghost"
+            className={cn(
+              "h-9 shadow-none",
+              side === "sell" && "bg-white text-red-700 shadow-sm ring-1 ring-red-200"
+            )}
             onClick={() => setSide("sell")}
           >
             Sell
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted/50 p-1">
           <Button
             type="button"
             size="sm"
-            variant={type === "limit" ? "secondary" : "ghost"}
+            variant="ghost"
+            className={cn(
+              "shadow-none",
+              type === "limit" && "bg-white shadow-sm ring-1 ring-border"
+            )}
             onClick={() => setType("limit")}
           >
             Limit
@@ -92,7 +99,11 @@ export function OrderPanel({ symbol, onOrderPlaced }: Props) {
           <Button
             type="button"
             size="sm"
-            variant={type === "market" ? "secondary" : "ghost"}
+            variant="ghost"
+            className={cn(
+              "shadow-none",
+              type === "market" && "bg-white shadow-sm ring-1 ring-border"
+            )}
             onClick={() => setType("market")}
           >
             Market
@@ -100,7 +111,9 @@ export function OrderPanel({ symbol, onOrderPlaced }: Props) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="qty">Quantity</Label>
+          <Label htmlFor="qty" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Quantity
+          </Label>
           <Input
             id="qty"
             type="number"
@@ -114,7 +127,9 @@ export function OrderPanel({ symbol, onOrderPlaced }: Props) {
 
         {type === "limit" && (
           <div className="space-y-2">
-            <Label htmlFor="price">Price</Label>
+            <Label htmlFor="price" className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Price
+            </Label>
             <Input
               id="price"
               type="number"
@@ -127,15 +142,14 @@ export function OrderPanel({ symbol, onOrderPlaced }: Props) {
           </div>
         )}
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
-        {success && <p className="text-sm text-emerald-500">{success}</p>}
-
         <Button
           type="submit"
           disabled={loading}
           className={cn(
-            "mt-auto w-full",
-            side === "buy" ? "bg-emerald-600 hover:bg-emerald-600/90" : "bg-red-600 hover:bg-red-600/90"
+            "mt-auto h-10 w-full font-semibold",
+            side === "buy"
+              ? "bg-emerald-600 text-white hover:bg-emerald-700"
+              : "bg-red-600 text-white hover:bg-red-700"
           )}
         >
           {loading ? "Placing..." : `${side === "buy" ? "Buy" : "Sell"} ${symbol}`}

@@ -60,8 +60,12 @@ export const api = {
     return request<{ markets: Market[] }>("/market");
   },
 
-  getOrders() {
-    return request<{ orders: Order[] }>("/orders");
+  getOrders(symbol?: string, openOnly = false) {
+    const params = new URLSearchParams();
+    if (symbol) params.set("symbol", symbol);
+    if (openOnly) params.set("open", "true");
+    const query = params.toString();
+    return request<{ orders: Order[] }>(`/orders${query ? `?${query}` : ""}`);
   },
 
   getOrder(orderId: string) {
@@ -95,5 +99,25 @@ export const api = {
 
   getHistory() {
     return request<{ history: TradeHistory[] }>("/history");
+  },
+
+  cancelOrder(orderId: string) {
+    return request<{ message: string; orderId: string }>(
+      `/orders/${orderId}/cancel`,
+      { method: "POST" }
+    );
+  },
+
+  exitPosition(symbol: string, positionId?: string) {
+    return request<{
+      message: string;
+      orderId: string;
+      side: string;
+      qty: number;
+      symbol: string;
+    }>(`/positions/${symbol}/exit`, {
+      method: "POST",
+      body: JSON.stringify(positionId ? { positionId } : {}),
+    });
   },
 };

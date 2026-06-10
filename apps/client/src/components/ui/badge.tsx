@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 type BadgeProps = {
   children: ReactNode;
-  variant?: "default" | "buy" | "sell" | "outline";
+  variant?: "default" | "buy" | "sell" | "outline" | "live";
   className?: string;
 };
 
@@ -11,11 +11,12 @@ export function Badge({ children, variant = "default", className }: BadgeProps) 
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium",
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
         variant === "default" && "bg-primary text-primary-foreground",
-        variant === "buy" && "bg-emerald-500/15 text-emerald-500",
-        variant === "sell" && "bg-red-500/15 text-red-500",
-        variant === "outline" && "border border-border text-muted-foreground",
+        variant === "buy" && "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+        variant === "sell" && "bg-red-50 text-red-700 ring-1 ring-red-200",
+        variant === "live" && "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+        variant === "outline" && "bg-muted text-muted-foreground ring-1 ring-border",
         className
       )}
     >

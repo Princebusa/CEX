@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { TrendingUp } from "lucide-react";
 
 export function RegisterPage() {
   const { register } = useAuth();
@@ -31,11 +32,14 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Register</CardTitle>
-          <CardDescription>Create your trading account</CardDescription>
+    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-gradient-to-b from-muted/40 to-background p-6">
+      <Card className="w-full max-w-md shadow-md">
+        <CardHeader className="space-y-3 text-center">
+          <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-primary/10">
+            <TrendingUp className="size-6 text-primary" />
+          </div>
+          <CardTitle className="text-xl">Create account</CardTitle>
+          <CardDescription>Start trading on the exchange</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -69,13 +73,13 @@ export function RegisterPage() {
                 minLength={6}
               />
             </div>
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Creating account..." : "Create account"}
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <Button type="submit" className="h-10 w-full" disabled={loading}>
+              {loading ? "Creating account…" : "Create account"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link to="/login" className="text-primary hover:underline">
+              <Link to="/login" className="font-medium text-primary hover:underline">
                 Login
               </Link>
             </p>

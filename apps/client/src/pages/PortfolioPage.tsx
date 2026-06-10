@@ -4,6 +4,7 @@ import type { Order, Portfolio, TradeHistory } from "@/api/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { formatPnl, pnlColorClass } from "@/lib/positionMetrics";
 
 export function PortfolioPage() {
   const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
@@ -13,10 +14,10 @@ export function PortfolioPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([api.getPortfolio(), api.getOrders(), api.getHistory()])
+    Promise.all([api.getPortfolio(), api.getOrders(undefined, true), api.getHistory()])
       .then(([p, o, h]) => {
         setPortfolio(p);
-        setOrders(o.orders.filter((order) => order.status === "pending"));
+        setOrders(o.orders);
         setHistory(h.history);
       })
       .finally(() => setLoading(false));
@@ -33,8 +34,13 @@ export function PortfolioPage() {
   ];
 
   return (
-    <div className="p-6">
-      <h1 className="mb-6 text-2xl font-bold">Portfolio</h1>
+    <div className="px-6 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">Portfolio</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Cash, positions, orders, and trade history
+        </p>
+      </div>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <Card>
@@ -64,12 +70,14 @@ export function PortfolioPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Portfolio
+              Unrealized P/L
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold tabular-nums">
-              ${portfolio?.totalPortfolioValue.toFixed(2) ?? "0.00"}
+            <p
+              className={`text-2xl font-bold tabular-nums ${pnlColorClass(portfolio?.totalUnrealizedPnl ?? 0)}`}
+            >
+              {formatPnl(portfolio?.totalUnrealizedPnl ?? 0)}
             </p>
           </CardContent>
         </Card>
@@ -87,29 +95,35 @@ export function PortfolioPage() {
                   <th className="pb-2">Symbol</th>
                   <th className="pb-2">Side</th>
                   <th className="pb-2">Type</th>
-                  <th className="pb-2">Qty</th>
+                  <th className="pb-2">Filled</th>
+                  <th className="pb-2">Remaining</th>
                   <th className="pb-2">Price</th>
                   <th className="pb-2">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {orders.map((o) => (
+                {orders.map((o) => {
+                  const filled = o.filledQty ?? 0;
+                  const remaining = o.remainingQty ?? o.qty - filled;
+                  return (
                   <tr key={o.orderId} className="border-b border-border/50">
                     <td className="py-2 font-medium">{o.symbol}</td>
                     <td className="py-2">
                       <Badge variant={o.side === "buy" ? "buy" : "sell"}>{o.side}</Badge>
                     </td>
                     <td className="py-2">{o.type}</td>
-                    <td className="py-2 tabular-nums">{o.qty}</td>
+                    <td className="py-2 tabular-nums">{filled}</td>
+                    <td className="py-2 tabular-nums">{remaining}</td>
                     <td className="py-2 tabular-nums">{o.price.toFixed(2)}</td>
                     <td className="py-2">
                       <Badge variant="outline">{o.status}</Badge>
                     </td>
                   </tr>
-                ))}
+                );
+                })}
                 {orders.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-6 text-center text-muted-foreground">
+                    <td colSpan={7} className="py-6 text-center text-muted-foreground">
                       No open orders
                     </td>
                   </tr>
@@ -165,7 +179,10 @@ export function PortfolioPage() {
                   <th className="pb-2">Side</th>
                   <th className="pb-2">Qty</th>
                   <th className="pb-2">Avg Price</th>
-                  <th className="pb-2">Value</th>
+                  <th className="pb-2">LTP</th>
+                  <th className="pb-2">Mkt Value</th>
+                  <th className="pb-2">P/L</th>
+                  <th className="pb-2">P/L %</th>
                 </tr>
               </thead>
               <tbody>
@@ -173,16 +190,33 @@ export function PortfolioPage() {
                   <tr key={p.id} className="border-b border-border/50">
                     <td className="py-2 font-medium">{p.symbol}</td>
                     <td className="py-2">
-                      <Badge variant={p.side === "buy" ? "buy" : "sell"}>{p.side}</Badge>
+                      <Badge variant={p.side === "buy" ? "buy" : "sell"}>
+                        {p.side === "sell" ? "short" : "long"}
+                      </Badge>
                     </td>
                     <td className="py-2 tabular-nums">{p.qty}</td>
                     <td className="py-2 tabular-nums">{p.price.toFixed(2)}</td>
-                    <td className="py-2 tabular-nums">{(p.value ?? p.qty * p.price).toFixed(2)}</td>
+                    <td className="py-2 tabular-nums">
+                      {p.markPrice != null ? p.markPrice.toFixed(2) : "—"}
+                    </td>
+                    <td className="py-2 tabular-nums">
+                      {(p.marketValue ?? p.qty * p.price).toFixed(2)}
+                    </td>
+                    <td
+                      className={`py-2 tabular-nums font-medium ${pnlColorClass(p.unrealizedPnl ?? 0)}`}
+                    >
+                      {formatPnl(p.unrealizedPnl ?? 0)}
+                    </td>
+                    <td
+                      className={`py-2 tabular-nums ${pnlColorClass(p.unrealizedPnl ?? 0)}`}
+                    >
+                      {formatPnl(p.unrealizedPnlPct ?? 0)}%
+                    </td>
                   </tr>
                 ))}
                 {(!portfolio?.positions || portfolio.positions.length === 0) && (
                   <tr>
-                    <td colSpan={5} className="py-6 text-center text-muted-foreground">
+                    <td colSpan={8} className="py-6 text-center text-muted-foreground">
                       No positions
                     </td>
                   </tr>

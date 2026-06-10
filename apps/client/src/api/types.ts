@@ -16,6 +16,8 @@ export type Order = {
   side: "buy" | "sell";
   type: "limit" | "market";
   qty: number;
+  filledQty?: number;
+  remainingQty?: number;
   price: number;
   status: string;
   timestamp: number;
@@ -29,6 +31,10 @@ export type Position = {
   price: number;
   marketId?: string;
   value?: number;
+  markPrice?: number;
+  marketValue?: number;
+  unrealizedPnl?: number;
+  unrealizedPnlPct?: number;
 };
 
 export type TradeHistory = {
@@ -44,6 +50,7 @@ export type Portfolio = {
   balance: number;
   positions: Position[];
   totalPositionValue: number;
+  totalUnrealizedPnl?: number;
   totalPortfolioValue: number;
 };
 

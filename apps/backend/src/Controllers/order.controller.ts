@@ -59,10 +59,29 @@ export default async function orderController(req: Request, res: Response) {
       type,
       price: price ?? 0,
       qty,
+      status: "pending",
       timestamp: Date.now(),
     };
 
-    await redisStream.xadd("orders_stream", "*", "data", JSON.stringify({ order }))
+    await prisma.order.create({
+      data: {
+        id: order.orderId,
+        userId,
+        symbol,
+        side,
+        type,
+        price: order.price,
+        qty,
+        status: "pending",
+      },
+    });
+
+    await redisStream.xadd(
+      "orders_stream",
+      "*",
+      "data",
+      JSON.stringify({ type: "order", order })
+    );
 
     return res.json({
       message: "Order placed",

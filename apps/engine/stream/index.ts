@@ -1,17 +1,16 @@
-import {publisher} from "redis";
+import { publisher, redisStream } from "redis";
 
-
- export async function emitOrderbook(symbol: string, bids: any[], asks: any[]): Promise<any> {
+export async function emitOrderbook(symbol: string, bids: any[], asks: any[]) {
   const snapshot = {
     symbol,
     bids: bids.slice(0, 10),
-    asks: asks.slice(0, 10)
+    asks: asks.slice(0, 10),
   };
 
-  await publisher.publish(
-    `orderbook_stream:${symbol}`,
-    JSON.stringify(snapshot)
-  );
+  const payload = JSON.stringify(snapshot);
+
+  await publisher.publish(`orderbook_stream:${symbol}`, payload);
+  await redisStream.set(`orderbook:${symbol.toLowerCase()}`, payload);
 }
 
 export async function emitTrade(
@@ -20,7 +19,7 @@ export async function emitTrade(
   qty: number,
   price: number,
   symbol: string
-): Promise<void> {
+) {
   const trade = {
     symbol,
     tradeId: crypto.randomUUID(),
@@ -33,8 +32,23 @@ export async function emitTrade(
     timestamp: Date.now(),
   };
 
+  const payload = JSON.stringify(trade);
+
+  await publisher.publish(`trades_stream:${symbol}`, payload);
+  await redisStream.xadd("settlements_stream", "*", "data", payload);
+  await redisStream.set(`last_price:${symbol.toLowerCase()}`, String(price));
+}
+
+export async function emitOrderUpdate(data: {
+  orderId: string;
+  userId: string;
+  symbol: string;
+  status: "open" | "filled" | "partially_filled" | "cancelled";
+  filledQty: number;
+  qty: number;
+}) {
   await publisher.publish(
-    `trades_stream:${symbol}`,
-    JSON.stringify(trade)
+    "order_updates",
+    JSON.stringify({ ...data, timestamp: Date.now() })
   );
 }
