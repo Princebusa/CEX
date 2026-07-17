@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp } from "lucide-react";
+import logo from '@/assets/logo.png'
 
 export function RegisterPage() {
   const { register } = useAuth();
@@ -35,8 +35,8 @@ export function RegisterPage() {
     <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-gradient-to-b from-muted/40 to-background p-6">
       <Card className="w-full max-w-md shadow-md">
         <CardHeader className="space-y-3 text-center">
-          <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-primary/10">
-            <TrendingUp className="size-6 text-primary" />
+          <div className="mx-auto flex items-center justify-center  ">
+            <img src={logo} alt="TradeX" className="size-10 object-contain rounded-[6px]" />
           </div>
           <CardTitle className="text-xl">Create account</CardTitle>
           <CardDescription>Start trading on the exchange</CardDescription>
