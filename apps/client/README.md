@@ -1,21 +1,25 @@
-# bun-react-tailwind-shadcn-template
-
-To install dependencies:
+# Client (Vite + React)
 
 ```bash
 bun install
+bun run dev
 ```
 
-To start a development server:
+App runs at http://localhost:4000.
 
-```bash
-bun dev
+## Environment
+
+```env
+VITE_BACKEND_URL=http://localhost:3000
+VITE_WS_URL=ws://localhost:3000
 ```
 
-To run for production:
+On Vercel, set the same vars to your deployed backend (`https://...` / `wss://...`).
 
-```bash
-bun start
-```
+## Scripts
 
-This project was created using `bun init` in bun v1.3.5. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+| Script | Description |
+|--------|-------------|
+| `dev` | Vite dev server |
+| `build` | Production build → `dist/` |
+| `preview` | Preview production build |

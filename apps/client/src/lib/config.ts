@@ -1,2 +1,4 @@
-export const API_URL = process.env.BACKEND_URL;
-export const WS_URL = process.env.WS_URL;
+export const API_URL =
+  import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+export const WS_URL =
+  import.meta.env.VITE_WS_URL || "ws://localhost:3000";
