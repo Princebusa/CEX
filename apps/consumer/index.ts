@@ -1,12 +1,9 @@
 import dotenv from "dotenv";
-import { resolve } from "path";
 
 dotenv.config();
-dotenv.config({ path: resolve(import.meta.dir, "../backend/.env") });
-dotenv.config({ path: resolve(import.meta.dir, "../../packages/db/.env") });
 
 if (!process.env.DATABASE_URL) {
-  console.error("DATABASE_URL missing — copy it from apps/backend/.env into apps/consumer/.env");
+  console.error("DATABASE_URL missing");
   process.exit(1);
 }
 
