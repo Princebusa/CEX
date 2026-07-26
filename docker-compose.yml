@@ -12,7 +12,7 @@ services:
       retries: 10
 
   backend:
-    image: cex-backend
+    image: prince137/cex-backend:latest
     build:
       context: .
       dockerfile: apps/backend/Dockerfile
@@ -29,7 +29,7 @@ services:
     restart: unless-stopped
 
   engine:
-    image: cex-engine
+    image: prince137/cex-engine:latest
     build:
       context: .
       dockerfile: apps/engine/Dockerfile
@@ -43,7 +43,7 @@ services:
     restart: unless-stopped
 
   consumer:
-    image: cex-consumer
+    image: prince137/cex-consumer:latest
     build:
       context: .
       dockerfile: apps/consumer/Dockerfile
