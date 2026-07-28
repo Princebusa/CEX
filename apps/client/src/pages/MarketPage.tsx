@@ -114,7 +114,7 @@ export function MarketPage() {
     <div className="flex h-[calc(100vh-3.5rem)] flex-col border-x border-border">
       <div className="flex items-center justify-between border-b border-border bg-card px-6 py-3">
         <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold tracking-tight text-foreground">{symbol}</span>
+          <span className="text-sm font-semibold tracking-tight text-foreground capitalize">{symbol}</span>
           <Badge variant={connected ? "live" : "outline"}>
             {connected ? "● Live" : "Connecting…"}
           </Badge>

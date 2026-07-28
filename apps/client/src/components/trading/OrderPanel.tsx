@@ -146,10 +146,10 @@ export function OrderPanel({ symbol, onOrderPlaced }: Props) {
           type="submit"
           disabled={loading}
           className={cn(
-            "mt-auto h-10 w-full font-semibold",
+            "mt-auto h-10 w-full font-medium text-[17px]",
             side === "buy"
-              ? "bg-emerald-600 text-white hover:bg-emerald-700"
-              : "bg-red-600 text-white hover:bg-red-700"
+              ? "bg-indigo text-white hover:bg-black/80"
+              : "bg-red-900 text-white hover:bg-red-700"
           )}
         >
           {loading ? "Placing..." : `${side === "buy" ? "Buy" : "Sell"} ${symbol}`}
