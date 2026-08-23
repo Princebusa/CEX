@@ -127,8 +127,10 @@ export function MarketPage() {
         </div>
 
         <div className="flex w-full min-h-0 flex-col border-0 border-border">
-          <div className="min-h-0 flex-1">
-            <PriceChart trades={trades} symbol={symbol} />
+          <div className="min-h-0 flex-1 bg-white flex items-center justify-center">
+            {/* <PriceChart trades={trades} symbol={symbol} /> */}
+           <p className="text-sm text-gray-500 capitalize center">price chart coming soon</p>
+
           </div>
         </div>
 
